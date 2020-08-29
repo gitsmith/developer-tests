@@ -5,6 +5,6 @@ namespace HockeyApi.Features.Team
     public interface ITeamService
     {
         IEnumerable<TeamModel> List();
-        TeamDetailsModel Get(string code);
+        TeamDetailsModel GetDetails(string code);
     }
 }

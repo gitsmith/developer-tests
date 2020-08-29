@@ -1,4 +1,4 @@
-﻿namespace HockeyApi.Common
+﻿namespace HockeyApi.Features.Player
 {
     public enum RosterTransactionType
     {

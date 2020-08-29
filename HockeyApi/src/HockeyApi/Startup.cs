@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using HockeyApi.Common;
 using HockeyApi.Features;
 using HockeyApi.Features.Player;
@@ -24,7 +25,15 @@ namespace HockeyApi
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddControllers();
+			services
+				.AddControllers()
+				.AddJsonOptions(jsonOptions =>
+				{
+					jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+					//add this just as a visual for myself...would not likely want to format a DateTime like this for an API unless there was a reason the API was responsible for dictating a consistent format
+					jsonOptions.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+				});
 
 			string connStr = _configuration.GetConnectionString("Default");
 			services.AddScoped<IDb>(_ => new Db(_configuration.GetConnectionString("Default")));

@@ -16,5 +16,11 @@ namespace HockeyApi.Features.Player
         {
             return Json(_playerService.Search(q));
         }
+
+        [HttpGet("[controller]/{id}")]
+        public IActionResult Get(int id)
+        {
+            return Json(_playerService.GetDetails(id));
+        }
     }
 }

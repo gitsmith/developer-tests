@@ -27,7 +27,7 @@ namespace HockeyApi.Features.Team
 												dataReader.GetString(dataReader.GetOrdinal("team_name"))));
 		}
 
-		public TeamDetailsModel Get(string code)
+		public TeamDetailsModel GetDetails(string code)
 		{
             var teamSqlCommand = new SqlCommand(@"
                                             SELECT

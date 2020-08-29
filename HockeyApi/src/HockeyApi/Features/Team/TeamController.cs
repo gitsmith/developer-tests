@@ -18,7 +18,7 @@ namespace HockeyApi.Features.Team
 		[HttpGet("[controller]/{code}")]
 		public IActionResult Get(string code)
 		{
-			return Json(_teamService.Get(code));
+			return Json(_teamService.GetDetails(code));
 		}
 	}
 }
