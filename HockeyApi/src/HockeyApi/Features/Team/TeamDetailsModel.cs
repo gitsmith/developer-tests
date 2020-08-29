@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using HockeyApi.Features.Player;
 
 namespace HockeyApi.Features.Team
@@ -8,8 +9,8 @@ namespace HockeyApi.Features.Team
         public TeamDetailsModel(TeamModel teamModel, IEnumerable<PlayerModel> activePlayers, IEnumerable<PlayerModel> inactivePlayers)
         {
             TeamModel = teamModel;
-            ActivePlayers = activePlayers;
-            InactivePlayers = inactivePlayers;
+            ActivePlayers = activePlayers ?? Enumerable.Empty<PlayerModel>();
+            InactivePlayers = inactivePlayers ?? Enumerable.Empty<PlayerModel>();
         }
 
         public TeamModel TeamModel { get; }

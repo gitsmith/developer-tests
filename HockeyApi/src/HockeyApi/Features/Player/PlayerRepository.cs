@@ -13,79 +13,46 @@ namespace HockeyApi.Features.Player
         {
         }
 
-        public IEnumerable<PlayerModel> Search(string q)
+        public bool UpdateStatus(PlayerStatusUpdateRequest playerStatusUpdateRequest)
         {
-            var sqlCommand = new SqlCommand(@"
-                                            SELECT
-                                                TOP 10
-                                                *
-                                            FROM
-                                                player
-                                            WHERE
-                                                first_name LIKE @q + '%'
-                                            OR
-                                                last_name LIKE @q + '%'");
+            using (var dbConnection = Db.CreateConnection())
+            {
+                using (var dbCommand = dbConnection.CreateCommand())
+                {
+                    dbCommand.CommandText = @"
+                                    INSERT INTO
+                                        roster_transaction(roster_transaction_type_id, player_id, team_code, effective_date)
+                                        VALUES (@roster_transaction_type_id, @player_id, @team_code, @effective_date)";
 
-            //TODO: should make q required...consider separating service from repository
-            sqlCommand.Parameters.Add("@q", System.Data.SqlDbType.VarChar).Value = q ?? string.Empty;
+                    var rosterTransactionTypeParameter = dbCommand.CreateParameter();
+                    rosterTransactionTypeParameter.DbType = System.Data.DbType.Int32;
+                    rosterTransactionTypeParameter.ParameterName = "@roster_transaction_type_id";
+                    rosterTransactionTypeParameter.Value = playerStatusUpdateRequest.RosterTransactionType;
+                    dbCommand.Parameters.Add(rosterTransactionTypeParameter);
 
-            return Get(
-                sqlCommand,
-                sqlDataReader =>
-                    new PlayerModel(
-                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("player_id")),
-                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("first_name")),
-                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("last_name"))));
-        }
+                    var playerIdParameter = dbCommand.CreateParameter();
+                    playerIdParameter.DbType = System.Data.DbType.Int32;
+                    playerIdParameter.ParameterName = "@player_id";
+                    playerIdParameter.Value = playerStatusUpdateRequest.PlayerId;
+                    dbCommand.Parameters.Add(playerIdParameter);
 
-        public PlayerDetailsModel GetDetails(int id)
-        {
-            var playerSqlCommand = new SqlCommand(@"
-                                                SELECT
-                                                    *
-                                                FROM
-                                                    player
-                                                WHERE
-                                                    player.player_id = @player_id");
+                    var teamCodeParameter = dbCommand.CreateParameter();
+                    teamCodeParameter.DbType = System.Data.DbType.String;
+                    teamCodeParameter.ParameterName = "@team_code";
+                    teamCodeParameter.Value = playerStatusUpdateRequest.TeamCode;
+                    dbCommand.Parameters.Add(teamCodeParameter);
 
-            playerSqlCommand.Parameters.Add("@player_id", System.Data.SqlDbType.VarChar).Value = id;
+                    var effectiveDateParameter = dbCommand.CreateParameter();
+                    effectiveDateParameter.DbType = System.Data.DbType.DateTime;
+                    effectiveDateParameter.ParameterName = "@effective_date";
+                    effectiveDateParameter.Value = playerStatusUpdateRequest.EffectiveDate;
+                    dbCommand.Parameters.Add(effectiveDateParameter);
 
-            var player = Get(
-                playerSqlCommand,
-                sqlDataReader =>
-                    new PlayerModel(
-                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("player_id")),
-                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("first_name")),
-                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("last_name")))).FirstOrDefault();
+                    dbCommand.ExecuteNonQuery();
 
-            var rosterTransactionsSqlCommand = new SqlCommand(@"
-                                                            SELECT
-                                                                TOP 10
-                                                                roster_transaction_id,
-                                                                roster_transaction_type_id,
-                                                                player_id,
-                                                                team_code,
-                                                                effective_date
-                                                            FROM
-                                                                roster_transaction
-                                                            WHERE
-                                                                roster_transaction.player_id = @player_id
-                                                            ORDER BY
-                                                                roster_transaction.effective_date DESC");
-
-            rosterTransactionsSqlCommand.Parameters.Add("@player_id", System.Data.SqlDbType.VarChar).Value = id;
-
-            var rosterTransactions = Get(
-                rosterTransactionsSqlCommand,
-                sqlDataReader =>
-                    new RosterTransactionModel(
-                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("roster_transaction_id")),
-                        (RosterTransactionType)sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("roster_transaction_type_id")),
-                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("player_id")),
-                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("team_code")),
-                        sqlDataReader.GetDateTime(sqlDataReader.GetOrdinal("effective_date"))));
-
-            return new PlayerDetailsModel(player, rosterTransactions);
+                    return true;
+                }
+            }
         }
 
         public int? Create(CreatePlayerRequest createPlayerRequest)
@@ -173,6 +140,86 @@ namespace HockeyApi.Features.Player
             }
 
             return null;
+        }
+
+        public PlayerDetailsModel GetDetails(int id)
+        {
+            var playerSqlCommand = new SqlCommand(@"
+                                                SELECT
+                                                    *
+                                                FROM
+                                                    player
+                                                WHERE
+                                                    player.player_id = @player_id");
+
+            playerSqlCommand.Parameters.Add("@player_id", System.Data.SqlDbType.VarChar).Value = id;
+
+            var player = Get(
+                playerSqlCommand,
+                sqlDataReader =>
+                    new PlayerModel(
+                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("player_id")),
+                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("first_name")),
+                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("last_name")))).FirstOrDefault();
+
+            if(player == null)
+            {
+                return null;
+            }
+
+            var rosterTransactionsSqlCommand = new SqlCommand(@"
+                                                            SELECT
+                                                                TOP 10
+                                                                roster_transaction_id,
+                                                                roster_transaction_type_id,
+                                                                player_id,
+                                                                team_code,
+                                                                effective_date
+                                                            FROM
+                                                                roster_transaction
+                                                            WHERE
+                                                                roster_transaction.player_id = @player_id
+                                                            ORDER BY
+                                                                roster_transaction.effective_date DESC");
+
+            rosterTransactionsSqlCommand.Parameters.Add("@player_id", System.Data.SqlDbType.VarChar).Value = id;
+
+            var rosterTransactions = Get(
+                rosterTransactionsSqlCommand,
+                sqlDataReader =>
+                    new RosterTransactionModel(
+                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("roster_transaction_id")),
+                        (RosterTransactionType)sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("roster_transaction_type_id")),
+                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("player_id")),
+                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("team_code")),
+                        sqlDataReader.GetDateTime(sqlDataReader.GetOrdinal("effective_date"))));
+
+            return new PlayerDetailsModel(player, rosterTransactions);
+        }
+
+        public IEnumerable<PlayerModel> Search(string q)
+        {
+            var sqlCommand = new SqlCommand(@"
+                                            SELECT
+                                                TOP 10
+                                                *
+                                            FROM
+                                                player
+                                            WHERE
+                                                first_name LIKE @q + '%'
+                                            OR
+                                                last_name LIKE @q + '%'");
+
+            //TODO: should make q required...consider separating service from repository
+            sqlCommand.Parameters.Add("@q", System.Data.SqlDbType.VarChar).Value = q ?? string.Empty;
+
+            return Get(
+                sqlCommand,
+                sqlDataReader =>
+                    new PlayerModel(
+                        sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("player_id")),
+                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("first_name")),
+                        sqlDataReader.GetString(sqlDataReader.GetOrdinal("last_name"))));
         }
     }
 }

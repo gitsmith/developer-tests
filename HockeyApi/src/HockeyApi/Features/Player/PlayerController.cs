@@ -42,5 +42,43 @@ namespace HockeyApi.Features.Player
         {
             return Json(_playerService.Search(q));
         }
+
+        [HttpPost("[controller]/{id}/injured")]
+        public IActionResult Injured(int id, [FromBody] PlayerStatusUpdateRequest assignToInjuredReserveRequest)
+        {
+            assignToInjuredReserveRequest.PlayerId = id;
+            if (_playerService.UpdateStatusToInjured(assignToInjuredReserveRequest))
+            {
+                return Ok();
+            }
+
+            return BadRequest();
+        }
+
+        [HttpPost("[controller]/{id}/healthy")]
+        public IActionResult Healthy(int id, [FromBody] PlayerStatusUpdateRequest assignToInjuredReserveRequest)
+        {
+            assignToInjuredReserveRequest.PlayerId = id;
+            if (_playerService.UpdateStatusToHealthy(assignToInjuredReserveRequest))
+            {
+                return Ok();
+            }
+
+            return BadRequest();
+        }
+
+
+        [HttpPost("[controller]/{id}/trade")]
+        public IActionResult Trade(int id, [FromBody] PlayerStatusUpdateRequest assignToInjuredReserveRequest)
+        {
+            assignToInjuredReserveRequest.PlayerId = id;
+            if (_playerService.UpdateStatusToTraded(assignToInjuredReserveRequest))
+            {
+                return Ok();
+            }
+
+            return BadRequest();
+        }
+
     }
 }

@@ -4,8 +4,9 @@ namespace HockeyApi.Features.Player
 {
     public interface IPlayerRepository
     {
-        IEnumerable<PlayerModel> Search(string q);
-        PlayerDetailsModel GetDetails(int id);
+        bool UpdateStatus(PlayerStatusUpdateRequest assignToInjuredReserveRequest);
         int? Create(CreatePlayerRequest createPlayerRequest);
+        PlayerDetailsModel GetDetails(int id);
+        IEnumerable<PlayerModel> Search(string q);
     }
 }

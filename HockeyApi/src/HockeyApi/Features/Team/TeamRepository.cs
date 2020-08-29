@@ -31,6 +31,11 @@ namespace HockeyApi.Features.Team
                         sqlDataReader.GetString(sqlDataReader.GetOrdinal("team_code")),
                         sqlDataReader.GetString(sqlDataReader.GetOrdinal("team_name")))).FirstOrDefault();
 
+            if(teamModel == null)
+            {
+                return null;
+            }
+
             var activePlayersSqlCommand = new SqlCommand(@$"
                                                         SELECT
                                                             player.player_id,
