@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HockeyApi.Common;
 using Microsoft.Data.SqlClient;
@@ -85,6 +86,11 @@ namespace HockeyApi.Features.Player
                         sqlDataReader.GetDateTime(sqlDataReader.GetOrdinal("effective_date"))));
 
             return new PlayerDetailsModel(player, rosterTransactions);
+        }
+
+        public string Create(CreatePlayerRequest createPlayerRequest)
+        {
+            return $"{createPlayerRequest.FirstName}-{createPlayerRequest.LastName}-{createPlayerRequest.TeamCode}-{createPlayerRequest.EffectiveDate}";
         }
     }
 }

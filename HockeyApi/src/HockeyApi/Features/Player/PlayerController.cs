@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HockeyApi.Features.Player
 {
@@ -18,9 +19,15 @@ namespace HockeyApi.Features.Player
         }
 
         [HttpGet("[controller]/{id}")]
-        public IActionResult Get(int id)
+        public IActionResult GetDetails(int id)
         {
             return Json(_playerService.GetDetails(id));
+        }
+
+        [HttpPost("[controller]")]
+        public IActionResult Create([FromBody] CreatePlayerRequest createPlayerRequest)
+        {
+            return Json(_playerService.Create(createPlayerRequest));
         }
     }
 }

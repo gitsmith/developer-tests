@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace HockeyApi.Features.Player
 {
@@ -6,5 +7,6 @@ namespace HockeyApi.Features.Player
     {
         IEnumerable<PlayerModel> Search(string q);
         PlayerDetailsModel GetDetails(int id);
+        string Create(CreatePlayerRequest createPlayerRequest);
     }
 }
