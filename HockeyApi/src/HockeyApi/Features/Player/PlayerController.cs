@@ -27,7 +27,14 @@ namespace HockeyApi.Features.Player
         [HttpPost("[controller]")]
         public IActionResult Create([FromBody] CreatePlayerRequest createPlayerRequest)
         {
-            return Json(_playerService.Create(createPlayerRequest));
+            var playerId = _playerService.Create(createPlayerRequest);
+
+            if (playerId == null)
+            {
+                return BadRequest();
+            }
+
+            return Created($"player/{playerId}", new { id = playerId});
         }
     }
 }

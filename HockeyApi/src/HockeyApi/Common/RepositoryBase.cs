@@ -6,18 +6,18 @@ namespace HockeyApi.Common
 {
     public abstract class RepositoryBase
     {
-        private readonly IDb _db;
-
         protected RepositoryBase(IDb db)
         {
-            _db = db;
+            Db = db;
         }
+
+        protected IDb Db { get; }
 
         protected IEnumerable<T> Get<T>(IDbCommand dbCommand, Func<IDataReader, T> mapper)
         {
             var items = new HashSet<T>();
 
-            using (var dbConnection = _db.CreateConnection())
+            using (var dbConnection = Db.CreateConnection())
             {
                 dbCommand.Connection = dbConnection;
 

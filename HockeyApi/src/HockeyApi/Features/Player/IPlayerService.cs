@@ -7,6 +7,6 @@ namespace HockeyApi.Features.Player
     {
         IEnumerable<PlayerModel> Search(string q);
         PlayerDetailsModel GetDetails(int id);
-        string Create(CreatePlayerRequest createPlayerRequest);
+        int? Create(CreatePlayerRequest createPlayerRequest);
     }
 }

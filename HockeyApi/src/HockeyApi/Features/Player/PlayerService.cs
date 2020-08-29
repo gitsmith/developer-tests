@@ -22,12 +22,12 @@ namespace HockeyApi.Features.Player
                                             FROM
                                                 player
                                             WHERE
-                                                first_name LIKE @query + '%'
+                                                first_name LIKE @q + '%'
                                             OR
-                                                last_name LIKE @query + '%'");
+                                                last_name LIKE @q + '%'");
 
             //TODO: should make q required...consider separating service from repository
-            sqlCommand.Parameters.Add("@query", System.Data.SqlDbType.VarChar).Value = q ?? string.Empty;
+            sqlCommand.Parameters.Add("@q", System.Data.SqlDbType.VarChar).Value = q ?? string.Empty;
 
             return Get(
                 sqlCommand,
@@ -88,9 +88,91 @@ namespace HockeyApi.Features.Player
             return new PlayerDetailsModel(player, rosterTransactions);
         }
 
-        public string Create(CreatePlayerRequest createPlayerRequest)
+        public int? Create(CreatePlayerRequest createPlayerRequest)
         {
-            return $"{createPlayerRequest.FirstName}-{createPlayerRequest.LastName}-{createPlayerRequest.TeamCode}-{createPlayerRequest.EffectiveDate}";
+            using (var dbConnection = Db.CreateConnection())
+            {
+                var dbTransaction = dbConnection.BeginTransaction();
+
+                using (var dbCommand = dbConnection.CreateCommand())
+                {
+                    try
+                    {
+                        dbCommand.Transaction = dbTransaction;
+
+                        dbCommand.CommandText = @"
+                                        INSERT INTO
+                                            player(first_name, last_name)
+                                            VALUES (@first_name, @last_name);
+                                            SELECT SCOPE_IDENTITY()";
+
+                        var firstNameParameter = dbCommand.CreateParameter();
+                        firstNameParameter.DbType = System.Data.DbType.String;
+                        firstNameParameter.ParameterName = "@first_name";
+                        firstNameParameter.Value = createPlayerRequest.FirstName;
+                        dbCommand.Parameters.Add(firstNameParameter);
+
+                        var lastNameParameter = dbCommand.CreateParameter();
+                        lastNameParameter.DbType = System.Data.DbType.String;
+                        lastNameParameter.ParameterName = "@last_name";
+                        lastNameParameter.Value = createPlayerRequest.LastName;
+                        dbCommand.Parameters.Add(lastNameParameter);
+
+                        var playerId = Convert.ToInt32(dbCommand.ExecuteScalar());
+
+                        dbCommand.Parameters.Clear();
+
+                        dbCommand.CommandText = @"
+                                        INSERT INTO
+                                            roster_transaction(roster_transaction_type_id, player_id, team_code, effective_date)
+                                            VALUES (@roster_transaction_type_id, @player_id, @team_code, @effective_date)";
+
+                        var rosterTransactionTypeParameter = dbCommand.CreateParameter();
+                        rosterTransactionTypeParameter.DbType = System.Data.DbType.Int32;
+                        rosterTransactionTypeParameter.ParameterName = "@roster_transaction_type_id";
+                        rosterTransactionTypeParameter.Value = RosterTransactionType.Signed;
+                        dbCommand.Parameters.Add(rosterTransactionTypeParameter);
+
+                        var playerIdParameter = dbCommand.CreateParameter();
+                        playerIdParameter.DbType = System.Data.DbType.Int32;
+                        playerIdParameter.ParameterName = "@player_id";
+                        playerIdParameter.Value = playerId;
+                        dbCommand.Parameters.Add(playerIdParameter);
+
+                        var teamCodeParameter = dbCommand.CreateParameter();
+                        teamCodeParameter.DbType = System.Data.DbType.String;
+                        teamCodeParameter.ParameterName = "@team_code";
+                        teamCodeParameter.Value = createPlayerRequest.TeamCode;
+                        dbCommand.Parameters.Add(teamCodeParameter);
+
+                        var effectiveDateParameter = dbCommand.CreateParameter();
+                        effectiveDateParameter.DbType = System.Data.DbType.DateTime;
+                        effectiveDateParameter.ParameterName = "@effective_date";
+                        effectiveDateParameter.Value = createPlayerRequest.EffectiveDate;
+                        dbCommand.Parameters.Add(effectiveDateParameter);
+
+                        dbCommand.ExecuteNonQuery();
+
+                        dbTransaction.Commit();
+
+                        return playerId;
+                    }
+                    catch (Exception exception)
+                    {
+                        try
+                        {
+                            dbTransaction.Rollback();
+                        }
+                        catch (Exception exception2)
+                        {
+                            //TODO: something smart
+                        }
+                    }
+
+                }
+            }
+
+            return null;
         }
     }
 }
