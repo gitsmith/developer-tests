@@ -1,4 +1,4 @@
-﻿namespace HockeyApi.Features
+﻿namespace HockeyApi.Features.Player
 {
     public class PlayerModel
     {

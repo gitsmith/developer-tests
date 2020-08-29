@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace HockeyApi.Features
+namespace HockeyApi.Features.Team
 {
     public class TeamController : Controller
 	{

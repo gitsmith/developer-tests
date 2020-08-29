@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HockeyApi.Features
+namespace HockeyApi.Features.Team
 {
     public interface ITeamService
     {

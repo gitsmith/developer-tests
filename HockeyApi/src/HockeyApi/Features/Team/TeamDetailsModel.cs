@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using HockeyApi.Features.Player;
 
-namespace HockeyApi.Features
+namespace HockeyApi.Features.Team
 {
     public class TeamDetailsModel
     {

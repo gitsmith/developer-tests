@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HockeyApi.Common;
+using HockeyApi.Features.Player;
 using Microsoft.Data.SqlClient;
 
-namespace HockeyApi.Features
+namespace HockeyApi.Features.Team
 {
-    public class TeamService : ITeamService
+    public class TeamService : RepositoryBase, ITeamService
 	{
-		private readonly IDb _db;
-
 		public TeamService(IDb db)
+            : base(db)
 		{
-			_db = db;
 		}
 
         public IEnumerable<TeamModel> List()
@@ -128,27 +125,5 @@ namespace HockeyApi.Features
 
             return new TeamDetailsModel(teamModel, activePlayers, inactivePlayers);
         }
-
-		private IEnumerable<T> Get<T>(IDbCommand dbCommand, Func<IDataReader, T> mapper)
-        {
-			var items = new HashSet<T>();
-
-			using (var dbConnection = _db.CreateConnection())
-            {
-				dbCommand.Connection = dbConnection;
-
-				using(var dataReader = dbCommand.ExecuteReader())
-                {
-					while(dataReader.Read())
-                    {
-						items.Add(mapper(dataReader));
-                    }
-                }
-
-				dbCommand.Dispose();
-            }
-
-			return items;
-		}
 	}
 }
