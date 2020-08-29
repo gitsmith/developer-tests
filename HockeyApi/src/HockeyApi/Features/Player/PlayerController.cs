@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace HockeyApi.Features.Player
 {
@@ -9,19 +8,7 @@ namespace HockeyApi.Features.Player
 
         public PlayerController(IPlayerService playerService)
         {
-            this._playerService = playerService;
-        }
-
-        [HttpGet("[controller]")]
-        public IActionResult Search(string q)
-        {
-            return Json(_playerService.Search(q));
-        }
-
-        [HttpGet("[controller]/{id}")]
-        public IActionResult GetDetails(int id)
-        {
-            return Json(_playerService.GetDetails(id));
+            _playerService = playerService;
         }
 
         [HttpPost("[controller]")]
@@ -34,7 +21,26 @@ namespace HockeyApi.Features.Player
                 return BadRequest();
             }
 
-            return Created($"player/{playerId}", new { id = playerId});
+            return Created($"player/{playerId}", new { id = playerId });
+        }
+
+        [HttpGet("[controller]/{id}")]
+        public IActionResult GetDetails(int id)
+        {
+            var playerDetails = _playerService.GetDetails(id);
+
+            if (playerDetails == null)
+            {
+                return NotFound();
+            }
+
+            return Json(playerDetails);
+        }
+
+        [HttpGet("[controller]")]
+        public IActionResult Search(string q)
+        {
+            return Json(_playerService.Search(q));
         }
     }
 }

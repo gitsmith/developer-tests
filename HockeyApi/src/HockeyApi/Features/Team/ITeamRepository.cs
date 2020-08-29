@@ -2,7 +2,7 @@
 
 namespace HockeyApi.Features.Team
 {
-    public interface ITeamService
+    public interface ITeamRepository
     {
         TeamDetailsModel GetDetails(string code);
         IEnumerable<TeamModel> List();

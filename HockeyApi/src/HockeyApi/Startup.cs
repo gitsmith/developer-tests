@@ -37,7 +37,9 @@ namespace HockeyApi
 
 			string connStr = _configuration.GetConnectionString("Default");
 			services.AddScoped<IDb>(_ => new Db(_configuration.GetConnectionString("Default")));
+			services.AddScoped<ITeamRepository, TeamRepository>();
 			services.AddScoped<ITeamService, TeamService>();
+			services.AddScoped<IPlayerRepository, PlayerRepository>();
 			services.AddScoped<IPlayerService, PlayerService>();
 		}
 
