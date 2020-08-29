@@ -1,7 +1,9 @@
-﻿namespace HockeyApi.Features {
+﻿namespace HockeyApi.Features
+{
     public class TeamModel
     {
-        public TeamModel(string code, string name) {
+        public TeamModel(string code, string name)
+        {
             Code = code;
             Name = name;
         }
